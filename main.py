@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
-from Conta import Conta
+from Conta import Conta, ContaPoupanca
+
 
 class Banco:
     def __init__(self, numero, nome):
@@ -23,9 +24,17 @@ class SistemaBancario:
         banco.numero = novo_numero
         banco.nome = novo_nome
 
-    def cadastrar_conta(self, numero, titular, saldo=0.0):
+    def cadastrar_conta_corrente(self, numero, titular, saldo=0.0):
         nova_conta = Conta(numero, titular, saldo)
         self.contas.append(nova_conta)
+
+    def cadastrar_conta_poupanca(self, numero, titular, saldo=0.0):
+        nova_conta = ContaPoupanca(numero, titular, saldo)
+        self.contas.append(nova_conta)
+
+    # def cadastrar_conta(self, numero, titular, saldo=0.0):
+    #     nova_conta = Conta(numero, titular, saldo)
+    #     self.contas.append(nova_conta)
 
     def listar_contas(self):
         return self.contas
@@ -88,6 +97,29 @@ class Tela:
 
         btn_salvar = tk.Button(self.nova_janela, text='Salvar', command=self.salvar_banco)
         btn_salvar.pack(pady=10)
+
+        lbl_numero = tk.Label(self.nova_janela, text='Número da Conta Poupança:')
+        lbl_numero.pack(pady=5)
+        self.ent_numero_conta = tk.Entry(self.nova_janela)
+        self.ent_numero_conta.pack(pady=5)
+
+        lbl_titular = tk.Label(self.nova_janela, text='Titular da Conta:')
+        lbl_titular.pack(pady=5)
+        self.ent_titular = tk.Entry(self.nova_janela)
+        self.ent_titular.pack(pady=5)
+
+        btn_salvar = tk.Button(self.nova_janela, text='Salvar', command=self.salvar_conta_poupanca)
+        btn_salvar.pack(pady=10)
+
+    def salvar_conta_poupanca(self):
+        numero = self.ent_numero_conta.get()
+        titular = self.ent_titular.get()
+        if numero and titular:
+            sistema.cadastrar_conta_poupanca(numero, titular)
+            messagebox.showinfo('Sucesso', 'Conta Poupança cadastrada com sucesso!')
+            self.nova_janela.destroy()
+        else:
+            messagebox.showwarning('Atenção', 'Preencha todos os campos!')
 
     def salvar_banco(self):
         numero = self.ent_numero.get()
@@ -199,11 +231,11 @@ class Tela:
         numero = self.ent_numero_conta.get()
         titular = self.ent_titular.get()
         if numero and titular:
-            sistema.cadastrar_conta(numero, titular)
-            messagebox.showinfo('Sucesso', 'Conta cadastrada com sucesso!')
+            sistema.cadastrar_conta_corrente(numero, titular)
+            messagebox.showinfo('Sucesso', 'Conta Corrente cadastrada com sucesso!')
             self.nova_janela.destroy()
         else:
-            messagebox.showwarning('Atenção', 'Preencha todos os campos!') # parei aqui!!
+            messagebox.showwarning('Atenção', 'Preencha todos os campos!')
 
     def mostrar_conta(self):
         nova_janela = tk.Toplevel(self.janela)
@@ -219,7 +251,9 @@ class Tela:
         contas = sistema.listar_contas()
         if contas:
             for conta in contas:
-                listbox.insert(tk.END, f"Número: {conta.numero}, Titular: {conta.titular}, Saldo: {conta.saldo}")
+                tipo_conta = "Poupança" if isinstance(conta, ContaPoupanca) else "Corrente"
+                listbox.insert(tk.END,
+                               f"{tipo_conta} - Número: {conta.numero}, Titular: {conta.titular}, Saldo: {conta.saldo}")
         else:
             listbox.insert(tk.END, "Nenhuma conta cadastrada.")
 
@@ -293,11 +327,22 @@ class Tela:
             messagebox.showwarning('Atenção', 'Preencha todos os campos!')
 
     def cadastrar_conta_poupanca(self):
-        nova_janela = tk.Toplevel(self.janela)
-        nova_janela.title('Cadastrar Conta Poupança')
-        nova_janela.geometry('300x200')
-        lbl_conta_poupanca = tk.Label(nova_janela, text='Cadastro de Conta Poupança')
-        lbl_conta_poupanca.pack(pady=10)
+        self.nova_janela = tk.Toplevel(self.janela)
+        self.nova_janela.title('Cadastrar Conta Poupança')
+        self.nova_janela.geometry('300x200')
+
+        lbl_numero = tk.Label(self.nova_janela, text='Número da Conta Poupança:')
+        lbl_numero.pack(pady=5)
+        self.ent_numero_conta = tk.Entry(self.nova_janela)
+        self.ent_numero_conta.pack(pady=5)
+
+        lbl_titular = tk.Label(self.nova_janela, text='Titular da Conta:')
+        lbl_titular.pack(pady=5)
+        self.ent_titular = tk.Entry(self.nova_janela)
+        self.ent_titular.pack(pady=5)
+
+        btn_salvar = tk.Button(self.nova_janela, text='Salvar', command=self.salvar_conta_poupanca)
+        btn_salvar.pack(pady=10)
 
     # def acessar_conta(self):
     #     nova_janela = tk.Toplevel(self.janela)
