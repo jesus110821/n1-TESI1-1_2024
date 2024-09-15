@@ -98,18 +98,6 @@ class Tela:
         btn_salvar = tk.Button(self.nova_janela, text='Salvar', command=self.salvar_banco)
         btn_salvar.pack(pady=10)
 
-        lbl_numero = tk.Label(self.nova_janela, text='Número da Conta Poupança:')
-        lbl_numero.pack(pady=5)
-        self.ent_numero_conta = tk.Entry(self.nova_janela)
-        self.ent_numero_conta.pack(pady=5)
-
-        lbl_titular = tk.Label(self.nova_janela, text='Titular da Conta:')
-        lbl_titular.pack(pady=5)
-        self.ent_titular = tk.Entry(self.nova_janela)
-        self.ent_titular.pack(pady=5)
-
-        btn_salvar = tk.Button(self.nova_janela, text='Salvar', command=self.salvar_conta_poupanca)
-        btn_salvar.pack(pady=10)
 
     def salvar_conta_poupanca(self):
         numero = self.ent_numero_conta.get()
