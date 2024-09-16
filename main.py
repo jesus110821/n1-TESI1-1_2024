@@ -44,10 +44,6 @@ class SistemaBancario:
         nova_conta = ContaPoupanca(numero, titular, saldo)
         self.contas.append(nova_conta)
 
-    # def cadastrar_conta(self, numero, titular, saldo=0.0):
-    #     nova_conta = Conta(numero, titular, saldo)
-    #     self.contas.append(nova_conta)
-
     def listar_contas(self):
         return self.contas
 
@@ -83,7 +79,8 @@ class Tela:
         self.mnu_conta.add_command(label='Cadastrar Conta Poupança', command=self.cadastrar_conta_poupanca)
         self.mnu_conta.add_command(label='Mostrar Conta', command=self.mostrar_conta)
         self.mnu_conta.add_command(label='Atualizar Conta', command=self.selecionar_conta_para_atualizar)
-        # self.mnu_conta.add_command(label='Acessar Conta', command=self.acessar_conta)
+        self.mnu_conta.add_command(label='Depositar', command=self.selecionar_conta_para_deposito)
+        self.mnu_conta.add_command(label='Sacar', command=self.selecionar_conta_para_saque)
         self.mnu_conta.add_separator()
 
         self.mnu_cliente.add_command(label='Cadastrar Cliente', command=self.cadastrar_cliente)
@@ -93,6 +90,70 @@ class Tela:
         self.mnu_cliente.add_separator()
 
         self.janela.config(menu=self.mnu_barra)
+
+    def selecionar_conta_para_deposito(self):
+        self.nova_janela_deposito = tk.Toplevel(self.janela)
+        self.nova_janela_deposito.title('Depósito')
+        self.nova_janela_deposito.geometry('300x200')
+
+        lbl_numero = tk.Label(self.nova_janela_deposito, text='Número da Conta:')
+        lbl_numero.pack(pady=5)
+        self.ent_numero_conta = tk.Entry(self.nova_janela_deposito)
+        self.ent_numero_conta.pack(pady=5)
+
+        lbl_valor = tk.Label(self.nova_janela_deposito, text='Valor do Depósito:')
+        lbl_valor.pack(pady=5)
+        self.ent_valor_deposito = tk.Entry(self.nova_janela_deposito)
+        self.ent_valor_deposito.pack(pady=5)
+
+        btn_depositar = tk.Button(self.nova_janela_deposito, text='Depositar', command=self.depositar_valor)
+        btn_depositar.pack(pady=10)
+
+    def depositar_valor(self):
+        numero_conta = self.ent_numero_conta.get()
+        valor = float(self.ent_valor_deposito.get())
+
+        for conta in sistema.contas:
+            if conta.numero == numero_conta:
+                if conta.depositar(valor):
+                    messagebox.showinfo('Sucesso', f'Depósito de R${valor:.2f} realizado com sucesso!')
+                else:
+                    messagebox.showwarning('Erro', 'Valor inválido para depósito!')
+                return
+
+        messagebox.showwarning('Erro', 'Conta não encontrada!')
+
+    def selecionar_conta_para_saque(self):
+        self.nova_janela_saque = tk.Toplevel(self.janela)
+        self.nova_janela_saque.title('Saque')
+        self.nova_janela_saque.geometry('300x200')
+
+        lbl_numero = tk.Label(self.nova_janela_saque, text='Número da Conta:')
+        lbl_numero.pack(pady=5)
+        self.ent_numero_conta_saque = tk.Entry(self.nova_janela_saque)
+        self.ent_numero_conta_saque.pack(pady=5)
+
+        lbl_valor = tk.Label(self.nova_janela_saque, text='Valor do Saque:')
+        lbl_valor.pack(pady=5)
+        self.ent_valor_saque = tk.Entry(self.nova_janela_saque)
+        self.ent_valor_saque.pack(pady=5)
+
+        btn_sacar = tk.Button(self.nova_janela_saque, text='Sacar', command=self.sacar_valor)
+        btn_sacar.pack(pady=10)
+
+    def sacar_valor(self):
+        numero_conta = self.ent_numero_conta_saque.get()
+        valor = float(self.ent_valor_saque.get())
+
+        for conta in sistema.contas:
+            if conta.numero == numero_conta:
+                if conta.sacar(valor):
+                    messagebox.showinfo('Sucesso', f'Saque de R${valor:.2f} realizado com sucesso!')
+                else:
+                    messagebox.showwarning('Erro', 'Saldo insuficiente ou valor inválido!')
+                return
+
+        messagebox.showwarning('Erro', 'Conta não encontrada!')
 
     def cadastrar_banco(self):
         self.nova_janela = tk.Toplevel(self.janela)
