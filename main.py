@@ -1,6 +1,7 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
-from Conta import Conta, ContaPoupanca
+from Conta import Conta, ContaPoupanca, ContaCorrente
 
 
 class Banco:
@@ -44,6 +45,11 @@ class SistemaBancario:
         nova_conta = ContaPoupanca(numero, titular, saldo)
         self.contas.append(nova_conta)
 
+    def atualizar_saldo_poupanca(self):
+        for conta in self.contas:
+            if isinstance(conta, ContaPoupanca):
+                conta.atualizar_saldo()
+
     def listar_contas(self):
         return self.contas
 
@@ -81,6 +87,7 @@ class Tela:
         self.mnu_conta.add_command(label='Atualizar Conta', command=self.selecionar_conta_para_atualizar)
         self.mnu_conta.add_command(label='Depositar', command=self.selecionar_conta_para_deposito)
         self.mnu_conta.add_command(label='Sacar', command=self.selecionar_conta_para_saque)
+        self.mnu_conta.add_command(label='Histórico de Transações', command=self.mostrar_historico)
         self.mnu_conta.add_separator()
 
         self.mnu_cliente.add_command(label='Cadastrar Cliente', command=self.cadastrar_cliente)
@@ -90,6 +97,34 @@ class Tela:
         self.mnu_cliente.add_separator()
 
         self.janela.config(menu=self.mnu_barra)
+
+
+    def mostrar_historico(self):
+        self.nova_janela_historico = tk.Toplevel(self.janela)
+        self.nova_janela_historico.title('Histórico de Transações')
+        self.nova_janela_historico.geometry('400x300')
+
+        lbl_numero = tk.Label(self.nova_janela_historico, text='Número da Conta:')
+        lbl_numero.pack(pady=5)
+        self.ent_numero_conta_historico = tk.Entry(self.nova_janela_historico)
+        self.ent_numero_conta_historico.pack(pady=5)
+
+        btn_exibir_historico = tk.Button(self.nova_janela_historico, text='Mostrar Histórico', command=self.exibir_historico)
+        btn_exibir_historico.pack(pady=10)
+
+    def exibir_historico(self):
+        numero_conta = self.ent_numero_conta_historico.get()
+
+        for conta in sistema.contas:
+            if conta.numero == numero_conta:
+                historico = conta.mostrar_historico()
+                if historico:
+                    messagebox.showinfo('Histórico de Transações', historico)
+                else:
+                    messagebox.showinfo('Histórico de Transações', 'Nenhuma transação encontrada.')
+                return
+
+        messagebox.showwarning('Erro', 'Conta não encontrada!')
 
     def selecionar_conta_para_deposito(self):
         self.nova_janela_deposito = tk.Toplevel(self.janela)
