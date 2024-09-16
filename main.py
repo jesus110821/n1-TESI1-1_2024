@@ -12,6 +12,18 @@ class SistemaBancario:
     def __init__(self):
         self.bancos = []
         self.contas = []
+        self.clientes = []
+
+    def cadastrar_cliente(self, nome, cpf):
+        novo_cliente = {'nome': nome, 'cpf': cpf}
+        self.clientes.append(novo_cliente)
+
+    def listar_clientes(self):
+        return self.clientes
+
+    def atualizar_cliente(self, cliente, novo_nome, novo_cpf):
+        cliente['nome'] = novo_nome
+        cliente['cpf'] = novo_cpf
 
     def cadastrar_bancos(self, numero, nome):
         novo_banco = Banco(numero, nome)
@@ -76,6 +88,8 @@ class Tela:
 
         self.mnu_cliente.add_command(label='Cadastrar Cliente', command=self.cadastrar_cliente)
         self.mnu_cliente.add_command(label='Mostrar Cliente', command=self.mostrar_cliente)
+        self.mnu_cliente.add_command(label='Atualizar Cliente', command=self.selecionar_cliente_para_atualizar)
+
         self.mnu_cliente.add_separator()
 
         self.janela.config(menu=self.mnu_barra)
@@ -306,8 +320,15 @@ class Tela:
         novo_numero = self.ent_novo_numero_conta.get()
         novo_titular = self.ent_novo_titular.get()
         novo_saldo = self.ent_novo_saldo.get()
-        if novo_numero and novo_titular and novo_saldo:
-            sistema.atualizar_conta(conta_selecionada, novo_numero, novo_titular, float(novo_saldo))
+
+        try:
+            novo_saldo = float(novo_saldo)
+        except ValueError:
+            messagebox.showwarning('Atenção', 'Saldo inválido. Por favor, insira um número válido.')
+            return
+
+        if novo_numero and novo_titular:
+            sistema.atualizar_conta(conta_selecionada, novo_numero, novo_titular, novo_saldo)
             messagebox.showinfo('Sucesso', 'Conta atualizada com sucesso!')
             self.nova_janela_atualizar.destroy()
             self.nova_janela_selecao.destroy()
@@ -340,18 +361,112 @@ class Tela:
     #     lbl_conta_poupanca.pack(pady=10)
 
     def cadastrar_cliente(self):
-        nova_janela = tk.Toplevel(self.janela)
-        nova_janela.title('Cadastrar Cliente')
-        nova_janela.geometry('300x200')
-        lbl_cliente = tk.Label(nova_janela, text='Cadastro de Cliente')
-        lbl_cliente.pack(pady=10)
+        self.nova_janela = tk.Toplevel(self.janela)
+        self.nova_janela.title('Cadastrar Cliente')
+        self.nova_janela.geometry('300x200')
+
+        lbl_nome_cliente = tk.Label(self.nova_janela, text='Nome do Cliente:')
+        lbl_nome_cliente.pack(pady=5)
+        self.ent_nome_cliente = tk.Entry(self.nova_janela)
+        self.ent_nome_cliente.pack(pady=5)
+
+        lbl_cpf = tk.Label(self.nova_janela, text='CPF do Cliente:')
+        lbl_cpf.pack(pady=5)
+        self.ent_cpf_cliente = tk.Entry(self.nova_janela)
+        self.ent_cpf_cliente.pack(pady=5)
+
+        btn_salvar = tk.Button(self.nova_janela, text='Salvar', command=self.salvar_cliente)
+        btn_salvar.pack(pady=10)
+
+    def salvar_cliente(self):
+        nome = self.ent_nome_cliente.get()
+        cpf = self.ent_cpf_cliente.get()
+        if nome and cpf:
+            sistema.cadastrar_cliente(nome, cpf)
+            messagebox.showinfo('Sucesso', 'Cliente cadastrado com sucesso!')
+            self.nova_janela.destroy()
+        else:
+            messagebox.showwarning('Atenção', 'Preencha todos os campos!')
 
     def mostrar_cliente(self):
         nova_janela = tk.Toplevel(self.janela)
-        nova_janela.title('Mostrar Cliente')
+        nova_janela.title('Clientes Cadastrados')
         nova_janela.geometry('300x200')
-        lbl_cliente = tk.Label(nova_janela, text='Clientes Cadastrados')
-        lbl_cliente.pack(pady=10)
+
+        lbl_clientes = tk.Label(nova_janela, text='Clientes Cadastrados:')
+        lbl_clientes.pack(pady=10)
+
+        listbox = tk.Listbox(nova_janela)
+        listbox.pack(fill=tk.BOTH, expand=True)
+
+        clientes = sistema.listar_clientes()
+        if clientes:
+            for cliente in clientes:
+                listbox.insert(tk.END, f"Nome: {cliente['nome']}, CPF: {cliente['cpf']}")
+        else:
+            listbox.insert(tk.END, "Nenhum cliente cadastrado.")
+
+    def selecionar_cliente_para_atualizar(self):
+        self.nova_janela_selecao = tk.Toplevel(self.janela)
+        self.nova_janela_selecao.title('Selecionar Cliente para Atualizar')
+        self.nova_janela_selecao.geometry('300x300')
+
+        lbl_selecao = tk.Label(self.nova_janela_selecao, text='Selecione o Cliente:')
+        lbl_selecao.pack(pady=10)
+
+        self.listbox_clientes = tk.Listbox(self.nova_janela_selecao)
+        self.listbox_clientes.pack(fill=tk.BOTH, expand=True)
+
+        clientes = sistema.listar_clientes()
+        if clientes:
+            for cliente in clientes:
+                self.listbox_clientes.insert(tk.END, f"Nome: {cliente['nome']}, CPF: {cliente['cpf']}")
+        else:
+            self.listbox_clientes.insert(tk.END, "Nenhum cliente cadastrado.")
+
+        btn_atualizar = tk.Button(self.nova_janela_selecao, text='Atualizar', command=self.atualizar_cliente)
+        btn_atualizar.pack(pady=10)
+
+    def atualizar_cliente(self):
+        selecao = self.listbox_clientes.curselection()
+        if not selecao:
+            messagebox.showwarning("Atenção", "Selecione um cliente para atualizar!")
+            return
+
+        index = selecao[0]
+        cliente_selecionado = sistema.listar_clientes()[index]
+
+        self.nova_janela_atualizar = tk.Toplevel(self.janela)
+        self.nova_janela_atualizar.title('Atualizar Cliente')
+        self.nova_janela_atualizar.geometry('300x200')
+
+        lbl_nome = tk.Label(self.nova_janela_atualizar, text='Novo Nome do Cliente:')
+        lbl_nome.pack(pady=5)
+        self.ent_novo_nome_cliente = tk.Entry(self.nova_janela_atualizar)
+        self.ent_novo_nome_cliente.pack(pady=5)
+        self.ent_novo_nome_cliente.insert(0, cliente_selecionado['nome'])
+
+        lbl_cpf = tk.Label(self.nova_janela_atualizar, text='Novo CPF do Cliente:')
+        lbl_cpf.pack(pady=5)
+        self.ent_novo_cpf_cliente = tk.Entry(self.nova_janela_atualizar)
+        self.ent_novo_cpf_cliente.pack(pady=5)
+        self.ent_novo_cpf_cliente.insert(0, cliente_selecionado['cpf'])
+
+        btn_salvar = tk.Button(self.nova_janela_atualizar, text='Salvar',
+                               command=lambda: self.salvar_atualizacao_cliente(cliente_selecionado))
+        btn_salvar.pack(pady=10)
+
+    def salvar_atualizacao_cliente(self, cliente_selecionado):
+        novo_nome = self.ent_novo_nome_cliente.get()
+        novo_cpf = self.ent_novo_cpf_cliente.get()
+        if novo_nome and novo_cpf:
+            sistema.atualizar_cliente(cliente_selecionado, novo_nome, novo_cpf)
+            messagebox.showinfo('Sucesso', 'Cliente atualizado com sucesso!')
+            self.nova_janela_atualizar.destroy()
+            self.nova_janela_selecao.destroy()
+        else:
+            messagebox.showwarning('Atenção', 'Preencha todos os campos!')
+
 
 janela = tk.Tk()
 app = Tela(janela)
